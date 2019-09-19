@@ -39,11 +39,11 @@
         skip_h1_title: false,
         base_numbering: 1,
         title_cell: 'Table of Contents',
-        title_sidebar: 'Contents',
+        title_sidebar: 'Table of Contents',
         toc_cell: false,
         toc_position: {},
         toc_section_display: true,
-        toc_window_display: false,
+        toc_window_display: true,
     };
     $.extend(true, default_cfg, metadata_settings);
 
@@ -56,11 +56,6 @@
      */
     var read_config = function () {
         var cfg = default_cfg;
-
-        if (!liveNotebook) {
-            return cfg;
-        }
-
         // config may be specified at system level or at document level.
         // first, update defaults with config loaded from server
         $.extend(true, cfg, IPython.notebook.config.data.toc2);
@@ -327,40 +322,142 @@
         setNotebookWidth(cfg);
     };
 
+    var utils = require('base/js/utils');
+
     var create_toc_div = function(cfg, st) {
 
         var callbackPageResize = function (evt) {
             setNotebookWidth(cfg);
         };
 
+        var divTocHeader = $('<div id="toc-header" />');
+
         var toc_wrapper = $('<div id="toc-wrapper"/>')
             .css('display', 'none')
+            .append(divTocHeader)
             .append(
-                $('<div id="toc-header"/>')
-                .append('<span class="header"/>')
-                .append(
-                    $('<i class="fa fa-fw hide-btn" title="Hide ToC">')
-                    .on('click', function (evt) {
-                        cfg.toc_section_display = setMd('toc_section_display', !cfg.toc_section_display);
-                        makeUnmakeMinimized(cfg, true);
-                    })
-                ).append(
-                    $('<i class="fa fa-fw fa-refresh" title="Reload ToC">')
-                    .on('click', function(evt) {
-                        var icon = $(evt.currentTarget).addClass('fa-spin');
-                        table_of_contents(cfg, st);
-                        icon.removeClass('fa-spin');
-                    })
-                ).append(
-                    $('<i class="fa fa-fw fa-cog" title="ToC settings"/>')
-                    .on('click', function(evt) {
-                        show_settings_dialog(cfg, st);
-                    })
-                )
-            ).append(
-                $("<div/>").attr("id", "toc").addClass('toc')
+                $("<div/>").attr("id", "toc").addClass('toc current')
             )
             .prependTo(liveNotebook ? '#site' : document.body);
+
+        var ulHeaderTab = $('<ul/>')
+                .addClass("tabs")
+                .appendTo(divTocHeader);
+
+        var liHeaderTab1 = $('<li/>')
+                .addClass("header current")
+                .attr("data-tab","toc")
+                .appendTo(ulHeaderTab);
+        liHeaderTab1.append("Table of Contents");
+
+        var liHeaderTab2 = $('<li/>')
+                .addClass("tab-link")
+                .attr("data-tab","tab-2")
+                .appendTo(ulHeaderTab);
+        liHeaderTab2.append("Code Snippet");
+
+        var liHeaderTab3 = $('<li/>')
+                .addClass("tab-link")
+                .attr("data-tab","tab-3")
+                .appendTo(ulHeaderTab);
+        liHeaderTab3.append("Files");
+
+        // File tab
+        var folderPath = utils.url_path_split(utils.get_body_data("notebookPath"))[0];
+
+        // Viewable files extensions
+        var html_extension = ['htm', 'html', 'xhtml', 'xml', 'mht', 'mhtml'];
+        var multimedia_extensions = ['3gp', 'avi', 'mov', 'mp4', 'm4v', 'm4a', 'mp3', 'mkv', 'ogv', 'ogm', 'ogg', 'oga', 'webm', 'wav'];
+        var image_extensions = ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'webp','ico'];
+        var viewables = [].concat(html_extension, multimedia_extensions, image_extensions);
+
+        // Downloadable files extensions
+        var filesViewable = ['pdf', 'docx'];
+
+        var response = function(data, status){
+            var row = $('<div/>')
+                    .addClass('toc')
+                    .attr('id','tab-3')
+                    .appendTo(toc_wrapper);
+
+            var itemList = $('<ul/>')
+                    .appendTo(row);
+            console.log("Data: " + JSON.stringify(data) + "\nStatus: " + status);
+            var len = data.content.length;
+            for (var i=0; i<len; i++)
+            {
+                var item = $('<li/>')
+                        .attr('style','list-style-type:none')
+                        .appendTo(itemList);
+                var baseUrl = utils.get_body_data("baseUrl");
+                var symbol = $('<i/>')
+                        .addClass('item_icon')
+                        .appendTo(item);
+                if (data.content[i].type === 'notebook')
+                {
+                    baseUrl = baseUrl + 'notebooks/';
+                    symbol.addClass('notebook_icon');
+                }
+                else if (data.content[i].type === 'file')
+                {
+                    var extension = data.content[i].name.split('.');
+                    if ($.inArray(extension[extension.length - 1],viewables) >= 0)
+                    {
+                        baseUrl = baseUrl + 'view/';
+                    }
+                    else if ($.inArray(extension[extension.length - 1],filesViewable) >= 0)
+                    {
+                        baseUrl = baseUrl + 'files/';
+                    }
+                    else
+                    {
+                        baseUrl = baseUrl + 'edit/';
+                    }
+                    symbol.addClass('file_icon');
+                }
+                else
+                {
+                    baseUrl = baseUrl + 'tree/';
+                    symbol.addClass('folder_icon');
+                }
+                var linkUrl = baseUrl+data.content[i].path;
+                var link = $('<a/>')
+                    .attr('href',linkUrl)
+                    .attr('target',"_blank")
+                    .appendTo(item);
+                link.append(data.content[i].name);
+            }
+        };
+        var ContentApiUrl = utils.get_body_data("baseUrl")+"api/contents/"+folderPath;
+        $.get(ContentApiUrl, response);
+
+        // Code Snippet
+        $.getJSON(utils.get_body_data("baseUrl")+'nbextensions/custom_toc/snippet.json',
+            function(data) {
+                var row = $('<div/>')
+                    .addClass('toc')
+                    .attr('id','tab-2')
+                    .appendTo(toc_wrapper);
+
+                var snippetList = $('<ul/>')
+                    .appendTo(row);
+
+                $.each(data,
+                    function(index, value) {
+                        var clickFunction = 'addSnippet('+JSON.stringify(value)+')';
+                        var item = $('<li/>')
+                            .attr('style','list-style-type:none')
+                            .attr('onclick',clickFunction)
+                            .addClass('code_snippet')
+                            .appendTo(snippetList);
+                        var link = $('<a/>')
+                            .attr('href','#')
+                            .appendTo(item);
+                        link.append((index+1) + '. '+ value['title']);
+                    }
+                );
+            }
+        );
 
         // enable dragging and save position on stop moving
         toc_wrapper.draggable({
@@ -418,10 +515,10 @@
         toc_wrapper.css(cfg.sideBar ? {width: toc_position.width} : toc_position);
         // older toc2 versions stored string representations, so update those
         if (cfg.toc_window_display === 'none') {
-            cfg.toc_window_display = setMd('toc_window_display', false);
+            cfg.toc_window_display = setMd('toc_window_display', true);
         }
         if (cfg.toc_section_display === 'none') {
-            cfg.toc_section_display = setMd('toc_section_display', false);
+            cfg.toc_section_display = setMd('toc_section_display', true);
         }
         toc_wrapper.toggle(cfg.toc_window_display);
         makeUnmakeSidebar(cfg);
@@ -648,7 +745,7 @@
         });
 
         // update navigation menu
-        if (cfg.navigate_menu && liveNotebook) {
+        if (cfg.navigate_menu) {
             var pop_nav = function() { //callback for create_nav_menu
                 $('#navigate_menu').empty().append($('#toc > .toc-item').clone());
             }
@@ -679,6 +776,7 @@
         // toggle draw (first because of first-click behavior)
         var wrap = $("#toc-wrapper");
         var show = wrap.is(':hidden');
+        console.log(show);
         wrap.toggle(show);
         cfg['toc_window_display'] = setMd('toc_window_display', show);
         setNotebookWidth(cfg);
@@ -825,4 +923,23 @@ if (!requirejs.specified('base/js/namespace')) {
             toc2.table_of_contents(cfg, st);
         });
     };
+}
+
+// Swtching between Tabs
+$(document).ready(function(){
+    $('ul.tabs li').click(function(){
+        var tab_id = $(this).attr('data-tab');
+        $('ul.tabs li').removeClass('current');
+        $('.toc').removeClass('current');
+
+        $(this).addClass('current');
+        $("#"+tab_id).addClass('current');
+    })
+
+})
+
+function addSnippet(obj) {
+    var newCodeCell = Jupyter.notebook.insert_cell_above('code');
+    newCodeCell.set_text(obj['snippet']);
+    console.log('New Code Cell added for code: '+obj['snippet']);
 }

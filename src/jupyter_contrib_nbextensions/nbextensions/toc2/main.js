@@ -154,7 +154,7 @@ define([
             // create highlights style section in document
             create_additional_css(cfg);
             // add toc toggle button (now that cfg has loaded)
-            toc_button(cfg);
+            // toc_button(cfg);
             // call main function with newly loaded config
             table_of_contents(cfg);
             // event: render toc for each markdown cell modification
@@ -180,7 +180,8 @@ define([
     }
 
     var load_ipython_extension = function() {
-        load_css(); //console.log("Loading css")
+        load_css();
+        console.log("Loading css");
 
         // Wait for the notebook to be fully loaded
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {

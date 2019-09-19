@@ -1,0 +1,12 @@
+[
+    {
+        "title": "Hello World",
+        "description": "Prints \"Hello World!\"",
+        "snippet": "print(\"Hello World!\")"
+    },
+    {
+        "title": "For Loop",
+        "description": "creates a for loop with range 10",
+        "snippet": "for i in range(10):\n  pass"
+    }
+]

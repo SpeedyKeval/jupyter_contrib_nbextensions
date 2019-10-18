@@ -360,21 +360,24 @@
                 .addClass("tab-link")
                 .attr("data-tab","tab-3")
                 .appendTo(ulHeaderTab);
-        liHeaderTab3.append("Files");
+        liHeaderTab3.append("Index");
 
-        // File tab
+        // Index tab
+        // Index of directory of NB
         var folderPath = utils.url_path_split(utils.get_body_data("notebookPath"))[0];
 
         // Viewable files extensions
+        // All the Viewable extension files should be open with "baseUrl/view/"
         var html_extension = ['htm', 'html', 'xhtml', 'xml', 'mht', 'mhtml'];
         var multimedia_extensions = ['3gp', 'avi', 'mov', 'mp4', 'm4v', 'm4a', 'mp3', 'mkv', 'ogv', 'ogm', 'ogg', 'oga', 'webm', 'wav'];
         var image_extensions = ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'webp','ico'];
         var viewables = [].concat(html_extension, multimedia_extensions, image_extensions);
 
         // Downloadable files extensions
+        // All the Downloadable extension files should be open with "baseUrl/files/"
         var filesViewable = ['pdf', 'docx'];
 
-        var response = function(data, status){
+        var response = function(data, status) {
             var row = $('<div/>')
                     .addClass('toc')
                     .attr('id','tab-3')
@@ -384,8 +387,7 @@
                     .appendTo(row);
             console.log("Data: " + JSON.stringify(data) + "\nStatus: " + status);
             var len = data.content.length;
-            for (var i=0; i<len; i++)
-            {
+            for (var i=0; i<len; i++) {
                 var item = $('<li/>')
                         .attr('style','list-style-type:none')
                         .appendTo(itemList);
@@ -393,35 +395,30 @@
                 var symbol = $('<i/>')
                         .addClass('item_icon')
                         .appendTo(item);
-                if (data.content[i].type === 'notebook')
-                {
+                if (data.content[i].type === 'notebook') {
                     baseUrl = baseUrl + 'notebooks/';
                     symbol.addClass('notebook_icon');
                 }
-                else if (data.content[i].type === 'file')
-                {
+                else if (data.content[i].type === 'file') {
                     var extension = data.content[i].name.split('.');
-                    if ($.inArray(extension[extension.length - 1],viewables) >= 0)
-                    {
+                    if ($.inArray(extension[extension.length - 1],viewables) >= 0) {
                         baseUrl = baseUrl + 'view/';
                     }
-                    else if ($.inArray(extension[extension.length - 1],filesViewable) >= 0)
-                    {
+                    else if ($.inArray(extension[extension.length - 1],filesViewable) >= 0) {
                         baseUrl = baseUrl + 'files/';
                     }
-                    else
-                    {
+                    else {
                         baseUrl = baseUrl + 'edit/';
                     }
                     symbol.addClass('file_icon');
                 }
-                else
-                {
+                else {
                     baseUrl = baseUrl + 'tree/';
                     symbol.addClass('folder_icon');
                 }
                 var linkUrl = baseUrl+data.content[i].path;
                 var link = $('<a/>')
+                    .addClass('indexButton')
                     .attr('href',linkUrl)
                     .attr('target',"_blank")
                     .appendTo(item);
@@ -432,7 +429,8 @@
         $.get(ContentApiUrl, response);
 
         // Code Snippet
-        $.getJSON(utils.get_body_data("baseUrl")+'nbextensions/custom_toc/snippet.json',
+        // snippet.json file must be present under the same directory of the NB
+        $.get(utils.get_body_data("baseUrl")+"api/contents/"+folderPath+'/snippet.json',
             function(data) {
                 var row = $('<div/>')
                     .addClass('toc')
@@ -442,7 +440,7 @@
                 var snippetList = $('<ul/>')
                     .appendTo(row);
 
-                $.each(data,
+                $.each(JSON.parse(data.content),
                     function(index, value) {
                         var clickFunction = 'addSnippet('+JSON.stringify(value)+')';
                         var item = $('<li/>')
@@ -451,6 +449,7 @@
                             .addClass('code_snippet')
                             .appendTo(snippetList);
                         var link = $('<a/>')
+                            .addClass('codeSnippetButton')
                             .attr('href','#')
                             .appendTo(item);
                         link.append((index+1) + '. '+ value['title']);
@@ -936,6 +935,11 @@ $(document).ready(function(){
         $("#"+tab_id).addClass('current');
     })
 
+    // URL of logo on the top-left to replace Jupyter Logo
+    /*
+    $('div.navbar-brand > a > img').attr('src',
+    'https://d1icd6shlvmxi6.cloudfront.net/gsc/Y0YWNC/6e/3c/e1/6e3ce11ab7b74eda8a19a9c34003854e/images/proposed_jupyter/u1781.png?token=20ce77d824866daafc9236ca2c8d666a45711e4b5bd7d646d1b5a79a9bfd4c0e');
+    */
 })
 
 function addSnippet(obj) {

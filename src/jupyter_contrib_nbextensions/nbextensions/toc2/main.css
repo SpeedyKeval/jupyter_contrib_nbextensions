@@ -63,6 +63,7 @@ padding-left: 20px;
   color: #333333;    /* default - alterable via nbextension-configurator */
   white-space: nowrap;
   overflow-x: auto;
+  padding-top: 5%;
 }
 .toc {
   display: none;
@@ -243,7 +244,20 @@ ul.tabs li.current {
   border-bottom-width: 0px;
 
   /* Font Color */
-  color: #222;
+  font-size: 14px;
+  color: rgb(127, 127, 127);
+}
+
+.codeSnippetButton {
+  font-size: 18px;
+  color: rgb(91, 91, 91);
+  line-height: 18px;
+}
+
+.indexButton {
+  font-size: 18px;
+  color: rgb(91, 91, 91);
+  line-height: 18px;
 }
 
 .tab-content {
@@ -259,33 +273,136 @@ ul.tabs li.current {
 .folder_icon {
   display: inline-block;
   font: normal normal normal 14px/1 FontAwesome;
-  font-size: inherit;
+  font-size: medium;
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   content: "\f114";
+  color: rgb(0, 0, 0);
 }
 
 .notebook_icon {
   display: inline-block;
   font: normal normal normal 14px/1 FontAwesome;
-  font-size: inherit;
+  font-size: medium;
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   content: "\f02d";
   position: relative;
   top: -1px;
+  color: rgb(0, 0, 0);
 }
 
 .file_icon {
   display: inline-block;
   font: normal normal normal 14px/1 FontAwesome;
-  font-size: inherit;
+  font-size: medium;
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   content: "\f016";
   position: relative;
   top: -2px;
+  color: rgb(0, 0, 0);
+}
+
+#menubar-container.container {
+    background-color: rgba(153, 153, 153, 1);
+    width: 100%;
+}
+
+.navbar-collapse {
+  background-color: rgba(153, 153, 153, 1);
+  border-color: rgba(153, 153, 153, 1);
+}
+
+#maintoolbar.navbar {
+  display: none;
+}
+
+.navbar-btn.btn-xs {
+  display: none;
+}
+
+#kernel_indicator {
+  display: none;
+}
+
+.navbar-default {
+  background-color: rgba(153, 153, 153, 1);
+  border-color: rgba(153, 153, 153, 1);
+}
+
+span#kernel_logo_widget {
+  display: none;
+}
+
+span.checkpoint_status, span.autosave_status {
+  display: none;
+}
+
+span.save_widget span.filename {
+  display: none;
+}
+
+.navbar-nav > li > a {
+  padding: 20px;
+}
+
+.nav > li > a {
+  position: relative;
+  display: block;
+  font-size: 16px;
+  height: 60px;
+}
+
+.navbar-default .navbar-nav > li > a{
+  color: #FFFFFF;
+}
+
+.navbar-default .navbar-nav > li > a:hover{
+  color: #FFFFFF;
+  background-color: rgb(80, 64, 64);
+}
+
+span#login_widget > #logout, #shutdown {
+  color: #333;
+  background-color: #fff;
+  border-color: #fff;
+  margin-left: 10px;
+}
+
+.btn-default {
+  color: #333;
+  background-color: #fff;
+  border-color: #fff;
+}
+
+.btn-default:hover {
+  background-color: #333000;
+}
+
+#header-container.container {
+  height: 70px;
+}
+
+#toc-header, .modal-header {
+  margin-top: 10%;
+  cursor: move;
+}
+
+.btn-sm, .btn-group-sm > .btn {
+  padding-top: 15px;
+  line-height: 1.5;
+  border-radius: 1px;
+  font-size: medium;
+}
+
+.navbar-brand {
+  line-height: 60px;
+}
+
+#ipython_notebook img {
+    height: 200%;
 }
